@@ -1,0 +1,65 @@
+#!/bin/sh
+AGENT=""
+if [ -z $APP_NAME ];then
+        echo "not exists APP_NAME=bootapp"
+        APP_NAME=bootapp
+else
+        echo "APP_NAME = $APP_NAME"
+
+fi
+
+
+if [ -z $CONF_LOCAL ];then
+        echo "not exists CONF_LOCAL=classpath:/application.properties"
+        CONF_LOCAL=classpath:/application.properties
+else
+        echo "CONF_LOCAL = $CONF_LOCAL"
+
+fi
+
+function ExportPath(){
+        echo "Begin ExportEnv"
+        export PATH=$PATH:/acs/user/jdk/bin:/acs/bin
+        export CLASSPATH=/acs/user/jdk/lib:$CLASSPATH
+        export LANG=en_US.UTF-8
+}
+
+function GetAgent(){
+        if  [ ! -n "$CONF_AGENT" ] ;then
+        echo "CONF_AGENT IS NULL MUST TO SET"
+        else
+        echo "get agent"
+        echo "$CONF_AGENT"
+        echo "wget agentzip from $CONF_AGENT"
+        wget -nv -O /acs/agent.zip $CONF_AGENT
+        unzip -q -o /acs/agent.zip -d /acs/agent
+        AGENT=$(find /acs/agent  -name "*agent.jar" | head -n 1)
+        echo "agent app is $AGENT"
+        fi
+}
+function Start(){
+	rm -f tpid
+	exec java -javaagent:$AGENT -Djava.security.egd=file:/dev/./urandom -jar /acs/user/src/$APP_NAME.jar $JAVA_OPTS --spring.config.location=$CONF_LOCAL --server.port = 8080 > /dev/stdout 2>&1 &
+	echo "/acs/user/src/$APP_NAME.jar"
+	echo $! > tpid
+	echo Start springboot Success!
+}
+
+function Cpapp(){
+	echo "Begin to copy app code to webapps"                                                                                                                                                                                         
+	CODE_EXIST=`ls /acs/code`                                                                                                                                                                                                    
+	if [ ! -z "$CODE_EXIST" ];then                                                                                                                                                                                              
+        rm -fr /acs/user/src/                                                                                                                                                                               
+        mkdir -p /acs/user/src                                                                                                                                                                               
+        cp -R /acs/code/* /acs/user/src/                                                                                                                                                                     
+	fi
+}
+
+#main
+ExportPath
+
+GetAgent
+
+Cpapp
+
+Start

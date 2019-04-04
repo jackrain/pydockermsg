@@ -1,0 +1,6 @@
+#!/bin/bash
+while :
+do
+  python /acs/wxbot.py
+  sleep 600
+done
