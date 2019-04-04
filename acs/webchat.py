@@ -8,9 +8,11 @@ import sqlite3,os
 
 httpurl=os.getenv("HOST")
 
+deptid=os.getenv("deptid")
+
 print(httpurl)
 
-httpurl="47.99.229.124:1027"
+#httpurl="47.99.229.124:1027"
 
 api = 'https://mp.weixin.qq.com/mp/audio?scene=105&__biz=MjM5NjAxOTU4MA==&mid=3009222479&idx=2&voice_id=MjM5NjAxOTU4MF8zMDA5MjIyNDc4&sn=ca6dff2422766bbc8a09015229681ea6#wechat_redirect'
 
@@ -71,7 +73,7 @@ if(res[0]==0):
 
     rsjson=(json.dumps(rsdata, ensure_ascii=False))
 
-    print(rsjson)
+    #print(rsjson)
 
     response = requests.post(rs_url, headers=headers,data=rsjson.encode("utf8"),timeout=5).text
 
@@ -86,11 +88,14 @@ if(res[0]==0):
     msgvo_url = "http://%s/mbos/ding_msg_ctrl/send_voice_msg"%httpurl
 
 
-    msgdata = {"mediaId":mediaid,"content":to,"title":to,"msgType":"text","deptId":"57284272","sender":"pyinfomation","corpId": "ding62aaa29d6c83d2e1","duration":60}
+    #msgdata = {"mediaId":mediaid,"content":to,"title":to,"msgType":"text","deptId":"57284272","sender":"pyinfomation","corpId": "ding62aaa29d6c83d2e1","duration":60}
+
+    msgdata = {"mediaId": mediaid, "content": to, "title": to, "msgType": "text", "deptId": deptid,
+               "sender": "pyinfomation", "corpId": "ding62aaa29d6c83d2e1", "duration": 60}
 
     rsjson = (json.dumps(msgdata, ensure_ascii=False))
 
-    print(rsjson)
+    #print(rsjson)
 
     response = requests.post(msgtxt_url, headers=headers, data=rsjson.encode("utf8"), timeout=5).text
 
