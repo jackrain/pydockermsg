@@ -1,6 +1,6 @@
 #!/bin/bash
 while :
 do
-  python /acs/wxbot.py
+  python3 /acs/webchat.py
   sleep 600
 done
