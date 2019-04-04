@@ -23,7 +23,7 @@ RUN yum install python36u-pip -y
 
 RUN ln -s /usr/bin/pip3.6 /bin/pip3
 
-RUN pip install -r /acs/requirements.txt
+RUN pip3 install -r /acs/requirements.txt
 
 WORKDIR /acs
 
