@@ -90,7 +90,7 @@ if(res[0]==0):
 
     #msgdata = {"mediaId":mediaid,"content":to,"title":to,"msgType":"text","deptId":"57284272","sender":"pyinfomation","corpId": "ding62aaa29d6c83d2e1","duration":60}
 
-    msgdata = {"mediaId": mediaid, "content": to, "title": to, "msgType": "text", "deptId": deptid,
+    msgdata = {"mediaId": mediaid, "content": to, "title": to, "msgType": "text", "toAll":"true",
                "sender": "pyinfomation", "corpId": "ding62aaa29d6c83d2e1", "duration": 60}
 
     rsjson = (json.dumps(msgdata, ensure_ascii=False))
