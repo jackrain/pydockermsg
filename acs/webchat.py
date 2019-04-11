@@ -37,6 +37,11 @@ voice=pattern.findall(script)
 to=(title[0].replace("title :","").strip())
 vo=(voice[1].replace("voiceid :","").replace('"',"").strip())
 
+if(str(to).find("罗胖")<1):
+    to = (title[1].replace("title :", "").strip())
+    vo = (voice[2].replace("voiceid :", "").replace('"', "").strip())
+    #print(to,vo)
+
 
 conn = sqlite3.connect('/tmp/msg.db')
 
