@@ -24,6 +24,9 @@ soup = BeautifulSoup(ctx,'html.parser')
 
 v=soup.find("body").find_all("script")[11]
 
+if((v.get_text()).find("history")<1):
+    v=soup.find("body").find_all("script")[12]
+
 script = v.get_text("|", strip=True)
 
 #print(script)
