@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import requests
 from bs4 import BeautifulSoup
 import re
@@ -7,12 +8,18 @@ import sqlite3,os
 # Get encrypted response text
 
 httpurl=os.getenv("HOST")
+#httpurl="47.99.229.124:1026"
 
 deptid=os.getenv("deptid")
 
-print(httpurl)
+corpId=os.getenv("corpId")
 
-#httpurl="47.99.229.124:1027"
+#corpId="ding62aaa29d6c83d2e1"#os.getenv("corpId")
+#ding62aaa29d6c83d2e1
+corpids=corpId.split(",")
+
+#print(httpurl)
+
 
 api = 'https://mp.weixin.qq.com/mp/audio?scene=105&__biz=MjM5NjAxOTU4MA==&mid=3009222479&idx=2&voice_id=MjM5NjAxOTU4MF8zMDA5MjIyNDc4&sn=ca6dff2422766bbc8a09015229681ea6#wechat_redirect'
 
@@ -20,9 +27,12 @@ response = requests.post(api)
 
 ctx=response.content
 
+#print(ctx)
+
 soup = BeautifulSoup(ctx,'html.parser')
 
 v=soup.find("body").find_all("script")[11]
+
 
 if((v.get_text()).find("history")<1):
     v=soup.find("body").find_all("script")[12]
@@ -54,71 +64,79 @@ c = conn.cursor()
 c.execute('''CREATE TABLE IF NOT EXISTS indexmsg
        (ID INTEGER PRIMARY KEY   autoincrement,
        NAME           TEXT    NOT NULL,
-       VO            TEXT     NOT NULL);''')
+       VO            TEXT     NOT NULL,
+       CPID        TEXT     NOT NULL);''')
 
 conn.commit()
 
-cursor = c.execute("SELECT count(1) from indexmsg where VO='%s'"%vo)
+for copid in corpids:
 
-res = cursor.fetchone()
+    print(copid)
+    cursor = c.execute("SELECT count(1) from indexmsg where VO='%s' and CPID='%s'"%(vo,copid))
 
+    res = cursor.fetchone()
 
-headers = \
-    {
-        "apptype": "BCP",
-        "Content-Type": "application/json;charset=UTF-8"
-    }
+    if(copid.__eq__("ding62aaa29d6c83d2e1")):
+        apptype="BCP"
+    else:
+        apptype="BOS"
 
-
-if(res[0]==0):
-
-    midurl="https://res.wx.qq.com/voice/getvoice?mediaid=%s"%vo
-
-    #rs_url="http://www.mbos.com/"
-    rs_url="http://%s/mbos/ding_media_ctrl/upload"%httpurl
-
-    rsdata={"corpId":"ding62aaa29d6c83d2e1","mediaUrl":midurl,"mediaName":to,"mediaType":"voice","duration":60}
-
-    rsjson=(json.dumps(rsdata, ensure_ascii=False))
-
-    #print(rsjson)
-
-    response = requests.post(rs_url, headers=headers,data=rsjson.encode("utf8"),timeout=5).text
-
-    content=json.loads(response)
-    print(content["code"])
-    print(content["data"]["mediaId"])
-
-    mediaid=content["data"]["mediaId"]
-
-    msgtxt_url = "http://%s/mbos/ding_msg_ctrl/send_text_msg"%httpurl
-
-    msgvo_url = "http://%s/mbos/ding_msg_ctrl/send_voice_msg"%httpurl
+    headers = \
+        {
+            "apptype": apptype,
+            "Content-Type": "application/json;charset=UTF-8"
+        }
 
 
-    #msgdata = {"mediaId":mediaid,"content":to,"title":to,"msgType":"text","deptId":"57284272","sender":"pyinfomation","corpId": "ding62aaa29d6c83d2e1","duration":60}
+    if(res[0]==0):
 
-    msgdata = {"mediaId": mediaid, "content": to, "title": to, "msgType": "text", "toAll":"true",
-               "sender": "pyinfomation", "corpId": "ding62aaa29d6c83d2e1", "duration": 60}
+        midurl="https://res.wx.qq.com/voice/getvoice?mediaid=%s"%vo
 
-    rsjson = (json.dumps(msgdata, ensure_ascii=False))
+        #rs_url="http://www.mbos.com/"
+        rs_url="http://%s/mbos/ding_media_ctrl/upload"%httpurl
 
-    #print(rsjson)
+        rsdata={"corpId":copid,"mediaUrl":midurl,"mediaName":to,"mediaType":"voice","duration":60}
 
-    response = requests.post(msgtxt_url, headers=headers, data=rsjson.encode("utf8"), timeout=5).text
+        rsjson=(json.dumps(rsdata, ensure_ascii=False))
 
-    content = json.loads(response)
+        #print(rsjson)
+
+        response = requests.post(rs_url, headers=headers,data=rsjson.encode("utf8"),timeout=5).text
+
+        content=json.loads(response)
+        print(content["code"])
+        print(content["data"]["mediaId"])
+
+        mediaid=content["data"]["mediaId"]
+
+        msgtxt_url = "http://%s/mbos/ding_msg_ctrl/send_text_msg"%httpurl
+
+        msgvo_url = "http://%s/mbos/ding_msg_ctrl/send_voice_msg"%httpurl
 
 
-    response = requests.post(msgvo_url, headers=headers, data=rsjson.encode("utf8"), timeout=5).text
+        #msgdata = {"mediaId":mediaid,"content":to,"title":to,"msgType":"text","deptId":"57284272","sender":"pyinfomation","corpId": "ding62aaa29d6c83d2e1","duration":60}
 
-    content = json.loads(response)
+        msgdata = {"mediaId": mediaid, "content": to, "title": to, "msgType": "text", "toAll":"true",
+                   "sender": "pyinfomation", "corpId": copid, "duration": 60}
 
-    if(content["code"]==0):
-        c.execute('insert into indexmsg(NAME,VO) VALUES  (?,?)',(to,vo))
-        conn.commit()
-else:
-    print("msg allready send!")
+        rsjson = (json.dumps(msgdata, ensure_ascii=False))
+
+        #print(rsjson)
+
+        response = requests.post(msgtxt_url, headers=headers, data=rsjson.encode("utf8"), timeout=5).text
+
+        content = json.loads(response)
+
+
+        response = requests.post(msgvo_url, headers=headers, data=rsjson.encode("utf8"), timeout=5).text
+
+        content = json.loads(response)
+
+        if(content["code"]==0):
+            c.execute('insert into indexmsg(NAME,VO,CPID) VALUES  (?,?,?)',(to,vo,copid))
+            conn.commit()
+    else:
+        print("msg allready send!")
 
 
 
